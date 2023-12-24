@@ -78,7 +78,6 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public boolean delete(String value) throws SQLException, ClassNotFoundException {
-
         Session session = HibernateUtil.getSession();
         Transaction transaction = session.beginTransaction();
         session.delete(session.find(Item.class,value));
@@ -89,8 +88,6 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public List<Item> getAll() throws SQLException, ClassNotFoundException {
-
-
         Session session = HibernateUtil.getSession();
         Query query = session.createQuery("FROM Item ");
         List<Item> list = query.list();

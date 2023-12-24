@@ -9,6 +9,7 @@ import dao.custom.OrderDao;
 import entity.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,30 +20,7 @@ import java.util.List;
 public class OrderDaoImpl implements OrderDao {
     OrderDetailsDao orderDetailsDao =new OrderDetailsDaoImpl();
     @Override
-    public boolean save(OrderDto dto) throws SQLException {
-//        Connection connection=null;
-//        try {
-//            connection = DBConnection.getInstance().getConnection();
-//            connection.setAutoCommit(false);
-//
-//            String sql = "INSERT INTO orders VALUES(?,?,?)";
-//            PreparedStatement pstm = connection.prepareStatement(sql);
-//            pstm.setString(1, dto.getOrderId());
-//            pstm.setString(2, dto.getDate());
-//            pstm.setString(3, dto.getCustId());
-//            if (pstm.executeUpdate() > 0) {
-//                boolean isDetailSaved = orderDetailsDao.saveOrderDetails(dto.getList());
-//                if (isDetailSaved) {
-//                    connection.commit();
-//                    return true;
-//                }
-//            }
-//        }catch (SQLException|ClassNotFoundException ex){
-//            connection.rollback();
-//        }finally {
-//            connection.setAutoCommit(true);
-//        }
-//       return false;
+    public boolean save(OrderDto dto) throws SQLException, ClassNotFoundException {
         Session session = HibernateUtil.getSession();
         Transaction transaction = session.beginTransaction();
         Orders order = new Orders(
@@ -52,7 +30,7 @@ public class OrderDaoImpl implements OrderDao {
         order.setCustomer(session.find(Customer.class,dto.getCustId()));
         session.save(order);
 
-        List<OrderDetailsDto> list = dto.getList(); //dto type
+        List<OrderDetailsDto> list = dto.getList();
 
         for (OrderDetailsDto detailDto:list) {
             OrderDetail orderDetail = new OrderDetail(
@@ -88,7 +66,7 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     public OrderDto lastOrder() throws SQLException, ClassNotFoundException {
-        String sql="SELECT * FROM orders ORDER BY id DESC LIMIT 1";
+        String sql="SELECT * FROM orders ORDER BY orderId DESC LIMIT 1";
         PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
         ResultSet resultSet = pstm.executeQuery();
         if(resultSet.next()){
@@ -104,10 +82,10 @@ public class OrderDaoImpl implements OrderDao {
 
     @Override
     public List<OrderDto> allOrders() throws SQLException, ClassNotFoundException {
-        List<OrderDto> list=new ArrayList<>();
         String sql="SELECT * FROM orders";
         PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
         ResultSet result = pstm.executeQuery();
+        List<OrderDto>list=new ArrayList<>();
 
         while (result.next()){
             list.add(new OrderDto(
@@ -118,6 +96,7 @@ public class OrderDaoImpl implements OrderDao {
             ));
         }
         return list;
+
     }
 
 

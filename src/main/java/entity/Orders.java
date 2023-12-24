@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
-
 @Setter
 @Getter
 @ToString
@@ -19,7 +18,7 @@ public class Orders {
 
 
     @ManyToOne
-    @JoinColumn(name = "customerid")
+    @JoinColumn(name = "customerId")
     private Customer customer;
 
     @OneToMany(mappedBy = "orders")
