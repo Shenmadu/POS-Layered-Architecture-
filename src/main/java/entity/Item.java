@@ -22,7 +22,7 @@ public class Item {
     private int qtyOnHand;
 
     @OneToMany(mappedBy = "item")
-    private List<OrderDetails> orderDetails = new ArrayList<>();
+    private List<OrderDetail> orderDetails = new ArrayList<>();
     public Item(String code, String description, double unitPrice, int qtyOnHand) {
         this.code = code;
         this.description = description;

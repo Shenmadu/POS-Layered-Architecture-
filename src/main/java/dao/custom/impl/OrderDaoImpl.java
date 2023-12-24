@@ -1,12 +1,15 @@
 package dao.custom.impl;
 
+import dao.util.HibernateUtil;
 import db.DBConnection;
+import dto.OrderDetailsDto;
 import dto.OrderDto;
 import dao.custom.OrderDetailsDao;
 import dao.custom.OrderDao;
-import entity.Orders;
+import entity.*;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,29 +20,55 @@ public class OrderDaoImpl implements OrderDao {
     OrderDetailsDao orderDetailsDao =new OrderDetailsDaoImpl();
     @Override
     public boolean save(OrderDto dto) throws SQLException {
-        Connection connection=null;
-        try {
-            connection = DBConnection.getInstance().getConnection();
-            connection.setAutoCommit(false);
+//        Connection connection=null;
+//        try {
+//            connection = DBConnection.getInstance().getConnection();
+//            connection.setAutoCommit(false);
+//
+//            String sql = "INSERT INTO orders VALUES(?,?,?)";
+//            PreparedStatement pstm = connection.prepareStatement(sql);
+//            pstm.setString(1, dto.getOrderId());
+//            pstm.setString(2, dto.getDate());
+//            pstm.setString(3, dto.getCustId());
+//            if (pstm.executeUpdate() > 0) {
+//                boolean isDetailSaved = orderDetailsDao.saveOrderDetails(dto.getList());
+//                if (isDetailSaved) {
+//                    connection.commit();
+//                    return true;
+//                }
+//            }
+//        }catch (SQLException|ClassNotFoundException ex){
+//            connection.rollback();
+//        }finally {
+//            connection.setAutoCommit(true);
+//        }
+//       return false;
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+        Orders order = new Orders(
+                dto.getOrderId(),
+                dto.getDate()
+        );
+        order.setCustomer(session.find(Customer.class,dto.getCustId()));
+        session.save(order);
 
-            String sql = "INSERT INTO orders VALUES(?,?,?)";
-            PreparedStatement pstm = connection.prepareStatement(sql);
-            pstm.setString(1, dto.getOrderId());
-            pstm.setString(2, dto.getDate());
-            pstm.setString(3, dto.getCustId());
-            if (pstm.executeUpdate() > 0) {
-                boolean isDetailSaved = orderDetailsDao.saveOrderDetails(dto.getList());
-                if (isDetailSaved) {
-                    connection.commit();
-                    return true;
-                }
-            }
-        }catch (SQLException|ClassNotFoundException ex){
-            connection.rollback();
-        }finally {
-            connection.setAutoCommit(true);
+        List<OrderDetailsDto> list = dto.getList(); //dto type
+
+        for (OrderDetailsDto detailDto:list) {
+            OrderDetail orderDetail = new OrderDetail(
+                    new OrderDetailsKey(detailDto.getOrderId(), detailDto.getItemCode()),
+                    session.find(Item.class, detailDto.getItemCode()),
+                    order,
+                    detailDto.getQty(),
+                    detailDto.getUnitPrice()
+            );
+            session.save(orderDetail);
         }
-       return false;
+
+        transaction.commit();
+        session.close();
+        return true;
+
     }
 
     @Override

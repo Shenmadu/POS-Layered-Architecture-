@@ -1,10 +1,15 @@
 package dao.custom.impl;
 
 import dao.util.CrudUtil;
+import dao.util.HibernateUtil;
 import db.DBConnection;
 import dto.ItemDto;
 import dao.custom.ItemDao;
+import entity.Customer;
 import entity.Item;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,58 +43,50 @@ public class ItemDaoImpl implements ItemDao {
 
     @Override
     public boolean save(Item entity) throws SQLException, ClassNotFoundException {
-        String sql = "INSERT INTO item VALUES(?,?,?,?)";
-//        PreparedStatement pstm= DBConnection.getInstance().getConnection().prepareStatement(sql);
-//
-//        pstm.setString(1,entity.getCode());
-//        pstm.setString(2,entity.getDescription());
-//        pstm.setDouble(3,entity.getUnitPrice());
-//        pstm.setInt(4,entity.getQtyOnHand());
-//
-//        return  pstm.executeUpdate()>0;
-        return CrudUtil.execute(sql,entity.getCode(),entity.getDescription(),entity.getUnitPrice(),entity.getQtyOnHand());
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+        session.save(entity);
+        transaction.commit();
+        session.close();
+        return true;
     }
 
     @Override
     public boolean update(Item entity) throws SQLException, ClassNotFoundException {
-        String sql="UPDATE item SET description=?,unitPrice=?,qtyOnHand=? WHERE code=?";
-//        PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
-//
-//        pstm.setString(1,entity.getDescription());
-//        pstm.setDouble(2,entity.getUnitPrice());
-//        pstm.setInt(3,entity.getQtyOnHand());
-//        pstm.setString(4,entity.getCode());
 
-//        return pstm.executeUpdate()>0;
-        return CrudUtil.execute(sql,entity.getDescription(),entity.getUnitPrice(),entity.getQtyOnHand(),entity.getCode());
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+
+        Item item = session.find(Item.class, entity.getCode());
+        item.setDescription(entity.getDescription());
+        item.setUnitPrice(entity.getUnitPrice());
+        item.setQtyOnHand(entity.getQtyOnHand());
+        session.save(item);
+        transaction.commit();
+        session.close();
+        return true;
     }
 
     @Override
     public boolean delete(String value) throws SQLException, ClassNotFoundException {
-        String sql="DELETE FROM item WHERE code=?";
-//        PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
-//        pstm.setString(1,value);
-//        return pstm.executeUpdate()>0;
-        return CrudUtil.execute(sql,value);
+
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+        session.delete(session.find(Item.class,value));
+        transaction.commit();
+        session.close();
+        return true;
     }
 
     @Override
     public List<Item> getAll() throws SQLException, ClassNotFoundException {
-        List<Item> list=new ArrayList<>();
 
-        String sql="SELECT * FROM item";
-//        PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
-//        ResultSet result = pstm.executeQuery();
-        ResultSet result=CrudUtil.execute(sql);
 
-        while(result.next()){
-            list.add(new Item(
-                    result.getString(1),
-                    result.getString(2),
-                    result.getDouble(3),
-                    result.getInt(4)
-            ));
-        }
+        Session session = HibernateUtil.getSession();
+        Query query = session.createQuery("FROM Item ");
+        List<Item> list = query.list();
+
+        session.close();
         return list;
     }
 }
