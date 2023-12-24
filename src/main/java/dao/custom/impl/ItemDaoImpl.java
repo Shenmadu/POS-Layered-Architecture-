@@ -18,23 +18,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemDaoImpl implements ItemDao {
+
     @Override
-    public ItemDto getItem(String code) throws SQLException, ClassNotFoundException {
-        String sql="SELECT * FROM item WHERE code=?";
-        PreparedStatement pstm=DBConnection.getInstance().getConnection().prepareStatement(sql);
-        pstm.setString(1,code);
-        ResultSet resultSet = pstm.executeQuery();
-//        ResultSet resultSet=CrudUtil.execute(sql,code);
-        if(resultSet.next()){
+    public ItemDto getItem(String code) {
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+
+        Query<Item> query = session.createQuery("FROM Item WHERE code = :code", Item.class);
+        query.setParameter("code", code);
+
+        Item item = query.uniqueResult();
+
+        transaction.commit();
+        session.close();
+
+        if (item != null) {
             return new ItemDto(
-                    resultSet.getString(1),
-                    resultSet.getString(2),
-                    resultSet.getDouble(3),
-                    resultSet.getInt(4)
+                    item.getCode(),
+                    item.getDescription(),
+                    item.getUnitPrice(),
+                    item.getQtyOnHand()
             );
+        } else {
+            return null;
         }
-        return null;
     }
+
     @Override
     public ItemDto searchItem(String id) {
         return null;
