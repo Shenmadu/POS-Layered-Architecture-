@@ -1,8 +1,15 @@
 package dao.custom.impl;
 
+import dao.util.HibernateUtil;
 import db.DBConnection;
 import dto.OrderDetailsDto;
 import dao.custom.OrderDetailsDao;
+import entity.Item;
+import entity.OrderDetail;
+import entity.OrderDetailsKey;
+import entity.Orders;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,19 +21,26 @@ public class OrderDetailsDaoImpl implements OrderDetailsDao {
     @Override
     public boolean saveOrderDetails(List<OrderDetailsDto> list) throws SQLException, ClassNotFoundException {
        boolean isDetailsSaved=true;
-        for (OrderDetailsDto dto:list) {
-            String sql="INSERT INTO orderdetail VALUES(?,?,?,?)";
-            PreparedStatement pstm = DBConnection.getInstance().getConnection().prepareStatement(sql);
-            pstm.setString(1,dto.getOrderId());
-            pstm.setString(2,dto.getItemCode());
-            pstm.setInt(3,dto.getQty());
-            pstm.setDouble(4,dto.getUnitPrice());
+        Session session = HibernateUtil.getSession();
+        Transaction transaction = session.beginTransaction();
+        for (OrderDetailsDto dto : list) {
+            Orders order = session.get(Orders.class, dto.getOrderId());
+            Item item = session.get(Item.class, dto.getItemCode());
 
-            if(!(pstm.executeUpdate()>0)){
-                isDetailsSaved=false;
-            }
+            OrderDetail orderDetail = new OrderDetail(
+                    new OrderDetailsKey(dto.getOrderId(), dto.getItemCode()),
+                    item,
+                    order,
+                    dto.getQty(),
+                    dto.getUnitPrice()
+            );
+
+            session.save(orderDetail);
         }
-        return isDetailsSaved;
+
+        transaction.commit();
+
+    return isDetailsSaved;
     }
 
     @Override
