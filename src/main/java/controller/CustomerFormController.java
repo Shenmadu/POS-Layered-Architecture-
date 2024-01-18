@@ -124,11 +124,11 @@ public class CustomerFormController {
     @FXML
     void goBackButtonOnAction(ActionEvent event) {
         Stage stage=(Stage) goBackButton.getScene().getWindow();
-        try {
-            stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("/view/DashboardForm.fxml"))));
-            stage.show();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                stage.setScene(new Scene(FXMLLoader.load(getClass().getResource("/view/DashboardForm.fxml"))));
+                stage.show();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
         }
     }
 

@@ -1,14 +1,20 @@
 package bo.custom.impl;
 
 import bo.custom.OrderBo;
+import dao.DaoFactory;
 import dao.custom.OrderDao;
 import dao.custom.impl.OrderDaoImpl;
+import dao.util.DaoType;
+import dto.ItemDto;
 import dto.OrderDto;
+import entity.Item;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderBoImpl implements OrderBo{
-    private OrderDao orderDao=new OrderDaoImpl();
+    private OrderDao orderDao= DaoFactory.getInstance().getDao(DaoType.ORDER);
 
     @Override
     public boolean saveOrder(OrderDto dto) throws SQLException,ClassNotFoundException {
@@ -35,6 +41,8 @@ public class OrderBoImpl implements OrderBo{
         }
 
     }
+//
+
 
 
 }

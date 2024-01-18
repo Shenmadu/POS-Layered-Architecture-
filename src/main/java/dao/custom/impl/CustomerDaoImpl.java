@@ -1,18 +1,18 @@
 package dao.custom.impl;
-import dao.util.CrudUtil;
+
 import dao.util.HibernateUtil;
 import dto.CustomerDto;
 import dao.custom.CustomerDao;
 import entity.Customer;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
+
 import org.hibernate.query.Query;
 
-import java.sql.ResultSet;
+
 import java.sql.SQLException;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class CustomerDaoImpl implements CustomerDao {
